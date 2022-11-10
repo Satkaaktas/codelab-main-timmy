@@ -16,6 +16,49 @@ public class InsuranceRepository : IRepository<Insurance>, IDisposable
         this.context = context;
     }
 
+    public IEnumerable<int> GetTop(int maxCount, int maxDepth)
+    {
+        List<Insurance> insurances = context.Insurances.ToList();
+        List<int> topValues = new List<int>(maxCount);
+
+        //Get only top level insurances
+        insurances = insurances.Where(i => i.ParentId == null || i.ParentId == 0).ToList();
+        
+        foreach(Insurance insurance in insurances)
+        {
+            topValues.Add(GetCombinedValue(insurance, maxDepth));
+        }
+
+        //Placing them in descending order
+        topValues.Sort();
+        topValues.Reverse();
+
+        //Removing everything except the top X insurances
+        for (int i = topValues.Count-1; i >= maxCount ; i--)
+        {
+            topValues.RemoveAt(i);
+        }
+
+        return topValues;
+    }
+
+    //Gets the total combined values of an insurance and all it's childred, with a specified depth
+    private int GetCombinedValue(Insurance insurance, int depth)
+    {
+        if(depth <= 0 || insurance.Children.Count <= 0)
+        {
+            return insurance.Value;
+        }
+        int totalValue = insurance.Value;
+        foreach(Insurance child in insurance.Children)
+        {
+			totalValue += GetCombinedValue(child, depth - 1);
+		}
+        return totalValue;
+    }
+        
+
+
     public IEnumerable<Insurance> GetAll()
     {
         return context.Insurances.ToList();

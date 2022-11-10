@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace tests;
-
 public class UnitTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
 {
     private readonly WebApplicationFactory<Program> factory;

@@ -11,61 +11,82 @@ namespace api.Extensions;
 
 public static class EndpointRouteBuilderExtensions
 {
-    public static IEndpointRouteBuilder MapRoutes(this IEndpointRouteBuilder endpointRouteBuilder)
-    {
-        endpointRouteBuilder.MapGet("/insurance/{insuranceId}",
-                    (
-                        [FromServices] IRepository<Insurance> insuranceRepository,
-                        [FromRoute] int insuranceId,
-                        CancellationToken cancellationToken) =>
-                            insuranceRepository.GetById(insuranceId)
-                    )
-                    .WithName("GetInsurance")
-                    .WithMetadata(new SwaggerOperationAttribute("Get insurance", "Get a insurance by id"));
-        endpointRouteBuilder.MapGet("/insurance",
-                    (
-                        [FromServices] IRepository<Insurance> insuranceRepository,
-                        CancellationToken cancellationToken) =>
-                            insuranceRepository.GetAll()
-                    )
-                    .WithName("GetInsurances")
-                    .WithMetadata(new SwaggerOperationAttribute("Get insurances", "Get all insurances"));
-        endpointRouteBuilder.MapPost("/insurance",
-                    (
-                        [FromServices] IRepository<Insurance> insuranceRepository,
-                        [FromBody] Insurance insurance,
-                        CancellationToken cancellationToken) =>
-                    {
-                        insuranceRepository.Insert(insurance);
-                        insuranceRepository.Save();
-                    }
-                    )
-                    .WithName("InsertInsurance")
-                    .WithMetadata(new SwaggerOperationAttribute("Insert insurance", "Insert an insurance"));
-        endpointRouteBuilder.MapDelete("/insurance/{insuranceId}",
-                    (
-                        [FromServices] IRepository<Insurance> insuranceRepository,
-                        [FromRoute] int insuranceId,
-                        CancellationToken cancellationToken) =>
-                    {
-                        insuranceRepository.Delete(insuranceId);
-                        insuranceRepository.Save();
-                    }
-                    )
-                    .WithName("DeleteInsurance")
-                    .WithMetadata(new SwaggerOperationAttribute("Delete insurance", "Delete an insurance"));
-        endpointRouteBuilder.MapPut("/insurance",
-                    (
-                        [FromServices] IRepository<Insurance> insuranceRepository,
-                        [FromBody] Insurance insurance,
-                        CancellationToken cancellationToken) =>
-                    {
-                        insuranceRepository.Update(insurance);
-                        insuranceRepository.Save();
-                    }
-                    )
-                    .WithName("UpdateInsurance")
-                    .WithMetadata(new SwaggerOperationAttribute("Update insurance", "Update an insurance"));
-        return endpointRouteBuilder;
-    }
+	public static IEndpointRouteBuilder MapRoutes(this IEndpointRouteBuilder endpointRouteBuilder)
+	{
+		endpointRouteBuilder.MapGet("/insurance/top/{maxCount}/{maxDepth}",
+					(
+						[FromServices] IRepository<Insurance> insuranceRepository,
+						[FromRoute] int maxCount,
+						[FromRoute] int maxDepth,
+						CancellationToken cancellationToken) =>
+							insuranceRepository.GetTop(maxCount, maxDepth)
+					)
+					.WithName("Top")
+					.WithMetadata(new SwaggerOperationAttribute("Get top insurances", "Get top insurances with combined values"));
+							
+		endpointRouteBuilder.MapGet("/insurance/{insuranceId}",
+					(
+						[FromServices] IRepository<Insurance> insuranceRepository,
+						[FromRoute] int insuranceId,
+						CancellationToken cancellationToken) =>
+							insuranceRepository.GetById(insuranceId)
+					)
+					.WithName("GetInsurance")
+					.WithMetadata(new SwaggerOperationAttribute("Get insurance", "Get a insurance by id"));
+		endpointRouteBuilder.MapGet("/insurance",
+					(
+						[FromServices] IRepository<Insurance> insuranceRepository,
+						CancellationToken cancellationToken) =>
+							insuranceRepository.GetAll()
+					)
+					.WithName("GetInsurances")
+					.WithMetadata(new SwaggerOperationAttribute("Get insurances", "Get all insurances"));
+		endpointRouteBuilder.MapPost("/insurance",
+					(
+						[FromServices] IRepository<Insurance> insuranceRepository,
+						[FromBody] Insurance insurance,
+						CancellationToken cancellationToken) =>
+					{
+
+						//If insurance has a parent, add parent insurance as parent and insurance as child to parent
+						if (insurance.ParentId != null && insurance.ParentId != 0)
+						{
+							Insurance parent = insuranceRepository.GetById((int)insurance.ParentId);
+							parent.Children.Add(insurance);
+							insurance.Parent = parent;
+							System.Diagnostics.Debug.WriteLine("Insurance" + insurance.Name + "added as a child to " + parent.Name);
+						}
+
+						insuranceRepository.Insert(insurance);
+						insuranceRepository.Save();
+					}
+					)
+					.WithName("InsertInsurance")
+					.WithMetadata(new SwaggerOperationAttribute("Insert insurance", "Insert an insurance"));
+		endpointRouteBuilder.MapDelete("/insurance/{insuranceId}",
+					(
+						[FromServices] IRepository<Insurance> insuranceRepository,
+						[FromRoute] int insuranceId,
+						CancellationToken cancellationToken) =>
+					{
+						insuranceRepository.Delete(insuranceId);
+						insuranceRepository.Save();
+					}
+					)
+					.WithName("DeleteInsurance")
+					.WithMetadata(new SwaggerOperationAttribute("Delete insurance", "Delete an insurance"));
+		endpointRouteBuilder.MapPut("/insurance",
+					(
+						[FromServices] IRepository<Insurance> insuranceRepository,
+						[FromBody] Insurance insurance,
+						CancellationToken cancellationToken) =>
+					{
+						insuranceRepository.Update(insurance);
+						insuranceRepository.Save();
+					}
+					)
+					.WithName("UpdateInsurance")
+					.WithMetadata(new SwaggerOperationAttribute("Update insurance", "Update an insurance"));
+		return endpointRouteBuilder;
+	}
 }

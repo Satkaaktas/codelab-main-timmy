@@ -5,6 +5,7 @@ namespace api.Repositories;
 
 public interface IRepository<T> : IDisposable
 {
+    IEnumerable<int> GetTop(int maxCount, int maxDepth);
     IEnumerable<T> GetAll();
     T? GetById(int id);
     void Insert(T item);
