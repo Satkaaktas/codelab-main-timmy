@@ -47,16 +47,6 @@ public static class EndpointRouteBuilderExtensions
 						[FromBody] Insurance insurance,
 						CancellationToken cancellationToken) =>
 					{
-
-						//If insurance has a parent, add parent insurance as parent and insurance as child to parent
-						if (insurance.ParentId != null && insurance.ParentId != 0)
-						{
-							Insurance parent = insuranceRepository.GetById((int)insurance.ParentId);
-							parent.Children.Add(insurance);
-							insurance.Parent = parent;
-							System.Diagnostics.Debug.WriteLine("Insurance" + insurance.Name + "added as a child to " + parent.Name);
-						}
-
 						insuranceRepository.Insert(insurance);
 						insuranceRepository.Save();
 					}
