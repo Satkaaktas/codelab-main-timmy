@@ -1,0 +1,15 @@
+Dokumentation:
+
+Jag har definierat en ny endpoint i EndpointRouteBuilderExtensions.cs som tar in två argument via URL. I InsuranceRepository.cs har jag definierat en metod som har två parametrar: MaxCount och MaxDepth. 
+Dessa, tillsammans med en lista på alla Insurances, skickas vidare till metoden GetTopValues i klassen Services.cs som jag lagt till. I den metoden byggs en lista ihop av varje Insurance totala värde rekursivt, via en metod 
+i Insurance-modellen jag lagt till (insurance.CombinedValue). Därefter sorterar jag listan i fallande ordning och tar bort elementen som inte täcks av inputen MaxCount. 
+
+Problem och hur jag löste dem:
+
+Jag var osäker på två saker en längre tid: 
+Skulle alla insurances returneras med det nya sammanladga värdet eller om jag endast skulle returnera värdet i sig (som ints)?
+Skulle jag returnera värdet för sub-insurances om de var bland de högsta?
+
+När jag läste uppgiften tolkade jag det som att det bara var värdena som skulle visas, så jag utgick från det. När jag sedan kikade närmre på testerna och körde dem var det uppenbart att det var rätt.
+Det var även genom testerna jag insåg att sub-insurances skulle inkluderas som resultat. Först antog jag att de inte skulle inkluderas och skrev en metod för att hämta endast de som inte hade några parents.
+
