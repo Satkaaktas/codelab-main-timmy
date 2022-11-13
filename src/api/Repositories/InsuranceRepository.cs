@@ -19,7 +19,16 @@ public class InsuranceRepository : IRepository<Insurance>, IDisposable
 
 	public IEnumerable<int> GetTop(int maxCount, int maxDepth)
 	{
-		return Services.GetTopValues(context.Insurances.ToList(), maxCount, maxDepth);
+		List<Insurance> insurances = context.Insurances.ToList();
+		List<int> topValues = insurances
+			.Select(x => x.CombinedValue(maxDepth))
+			.ToList();
+
+		//Placing them in descending order
+		topValues.Sort();
+		topValues.Reverse();
+
+		return topValues.Take(maxCount).ToList();
 	}
 
 	public IEnumerable<Insurance> GetAll()
